@@ -119,7 +119,15 @@ public class RentalServiceImpl implements RentalService {
     return new CustomerRental(
       rental.getFilmTitle(),  //todo: This is not on the requirements but I believe this field is essential to user
       rental.getRentalDate(),
-      Math.toIntExact(Duration.between(rental.getRentalDate(), rental.getReturnDate()).toDays()),
+      calculateRentalDuration(rental.getRentalDate(), rental.getReturnDate()),
       costOfRental);
+  }
+
+  private Integer calculateRentalDuration(LocalDateTime startDate, LocalDateTime returnDate) {
+    Integer duration = null;
+    if(startDate != null && returnDate != null) {
+      duration = Math.toIntExact(Duration.between(startDate, returnDate).toDays());
+    }
+    return duration;
   }
 }

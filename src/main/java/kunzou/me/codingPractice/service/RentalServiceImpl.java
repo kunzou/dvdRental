@@ -12,6 +12,7 @@ import kunzou.me.codingPractice.exception.CustomerNotFoundException;
 import kunzou.me.codingPractice.exception.FilmNotFoundException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -30,13 +31,13 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.newA
 public class RentalServiceImpl implements RentalService {
 
   @Value("${mongodb.maximum.result}")
-  private Integer maximumResult;
+  private Integer MAXIMUM_RESULTS;
 
   @Value("${exception.customer.not.found}")
-  private String customerNotFoundErrorMessage;
+  private String CUSTOMER_NOT_FOUND;
 
   @Value("${exception.film.not.found}")
-  private String filmNotFoundErrorMessage;
+  private String FILM_NOT_FOUND;
 
   private MongoTemplate mongoTemplate;
 
@@ -45,18 +46,20 @@ public class RentalServiceImpl implements RentalService {
   }
 
   @Override
+  @Cacheable(value = CachingService.CACHE, key = "#root.methodName")
   public List<Customer> getAllCustomers() {
-    return mongoTemplate.find(new Query().limit(maximumResult), Customer.class);
+    return mongoTemplate.find(new Query().limit(MAXIMUM_RESULTS), Customer.class);
   }
 
   @Override
+  @Cacheable(value = CachingService.CACHE, key = "#root.methodName")
   public List<AvailableFilm> getAvailableFilms() {
     List<Long> unavailableFilmIds = getUnavailableFilmIdsByReturnDate(LocalDateTime.now());
 
     MatchOperation matchStage = Aggregation.match(Criteria.where("_id").nin(unavailableFilmIds));
     ProjectionOperation projectStage = Aggregation.project("_id", "Title", "Category", "Description", "Rating", "Rental Duration");
 
-    Aggregation aggregation = Aggregation.newAggregation(matchStage, projectStage).withOptions(newAggregationOptions().cursorBatchSize(maximumResult).build());
+    Aggregation aggregation = Aggregation.newAggregation(matchStage, projectStage).withOptions(newAggregationOptions().cursorBatchSize(MAXIMUM_RESULTS).build());
 
     return mongoTemplate.aggregate(aggregation, "film", AvailableFilm.class).getMappedResults();
   }
@@ -76,10 +79,11 @@ public class RentalServiceImpl implements RentalService {
   }
 
   @Override
+  @Cacheable(value = CachingService.CACHE, key = "-#id") //todo: better key generating strategy
   public FilmInformation getFilmInformation(Long id) {
     Film film = mongoTemplate.findById(id, Film.class);
     if(film == null) {
-      throw new FilmNotFoundException(filmNotFoundErrorMessage, id);
+      throw new FilmNotFoundException(FILM_NOT_FOUND, id);
     }
 
     Query query = new Query();
@@ -103,10 +107,11 @@ public class RentalServiceImpl implements RentalService {
   }
 
   @Override
+  @Cacheable(value = CachingService.CACHE, key = "#id")
   public CustomerInformation getCustomerInformation(Long id) {
     Customer customer = mongoTemplate.findById(id, Customer.class);
     if(customer == null) {
-      throw new CustomerNotFoundException(customerNotFoundErrorMessage, id);
+      throw new CustomerNotFoundException(CUSTOMER_NOT_FOUND, id);
     }
     return buildCustomerInformation(customer);
   }

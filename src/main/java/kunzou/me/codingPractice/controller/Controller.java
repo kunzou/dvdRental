@@ -5,6 +5,7 @@ import kunzou.me.codingPractice.dto.CustomerInformation;
 import kunzou.me.codingPractice.dto.FilmInformation;
 import kunzou.me.codingPractice.service.RentalService;
 import kunzou.me.codingPractice.dto.AvailableFilm;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,22 +24,22 @@ public class Controller {
     this.rentalService = rentalService;
   }
 
-  @GetMapping("/customers")
+  @GetMapping(value = "/customers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Customer>> getCustomers() {
     return ResponseEntity.ok().body(rentalService.getAllCustomers());
   }
 
-  @GetMapping("/customer/{id}")
+  @GetMapping(value = "/customer/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<CustomerInformation> getCustomerById(@PathVariable("id") Long id) {
     return ResponseEntity.ok().body(rentalService.getCustomerInformation(id));
   }
 
-  @GetMapping("/availableFilms")
+  @GetMapping(value = "/availableFilms", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<AvailableFilm>> getAvailableFilms() {
     return ResponseEntity.ok().body(rentalService.getAvailableFilms());
   }
 
-  @GetMapping("/film/{id}")
+  @GetMapping(value = "/film/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<FilmInformation> getFilmById(@PathVariable("id") Long id) {
     return ResponseEntity.ok().body(rentalService.getFilmInformation(id));
   }

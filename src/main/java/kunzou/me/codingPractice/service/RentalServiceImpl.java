@@ -75,7 +75,15 @@ public class RentalServiceImpl implements RentalService {
     Aggregation aggregation = Aggregation.newAggregation(unwindOperation, matchStage, projectStage);
 
     return mongoTemplate.aggregate(aggregation, "customer", Map.class).getMappedResults().stream()
-      .map(map -> Long.valueOf((Integer)map.get("filmId"))).collect(Collectors.toList());
+      .map(result -> {
+        Object filmId = result.get("filmId");
+        if(filmId instanceof Integer) {
+          return Long.valueOf((Integer)filmId);
+        } else {
+          return (Long)filmId;
+        }
+      })
+      .collect(Collectors.toList());
   }
 
   @Override

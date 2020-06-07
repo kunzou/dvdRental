@@ -10,6 +10,7 @@
 	</parent>
 	<groupId>kunzou.me</groupId>
 	<artifactId>codingPractice</artifactId>
+  <packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>codingPractice</name>
 	<description>coding practice for jSonar</description>
